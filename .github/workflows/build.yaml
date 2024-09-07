@@ -33,6 +33,8 @@ jobs:
 
   build:
     needs: target-apps
+    # GitHub Actions doesn't allow empty matrix.
+    if: ${{ needs.target-apps.outputs.apps != '[]' }}
     strategy:
       matrix:
         app: ${{ fromJson(needs.target-apps.outputs.apps) }}
