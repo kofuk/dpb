@@ -5,5 +5,5 @@ RUN CGO_ENABLED=0 go build -o pg-to-gcs .
 
 FROM postgres:17
 COPY --from=builder /build/pg-to-gcs /usr/bin/pg-to-gcs
-
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 ENTRYPOINT ["/usr/bin/pg-to-gcs"]
