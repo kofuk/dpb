@@ -3,7 +3,7 @@ module github.com/kofuk/dpb/pg-to-gcs
 go 1.23.1
 
 require (
-	cloud.google.com/go/storage v1.45.0
+	cloud.google.com/go/storage v1.46.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	google.golang.org/api v0.204.0
 )
