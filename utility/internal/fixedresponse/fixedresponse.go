@@ -1,12 +1,14 @@
-package main
+package fixedresponse
 
 import (
+	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"strconv"
 )
 
-func main() {
+func Run() {
 	statusCode := 200
 	if os.Getenv("STATUS_CODE") != "" {
 		var err error
@@ -29,5 +31,7 @@ func main() {
 		w.Write([]byte(body))
 	})
 
-	http.ListenAndServe(":8000", nil)
+	if err := http.ListenAndServe(":8000", nil); err != nil {
+		slog.Error(fmt.Sprintf("Failed to listen and serve: %s", err.Error()))
+	}
 }
