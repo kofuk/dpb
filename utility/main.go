@@ -5,10 +5,12 @@ import (
 	"os"
 
 	"github.com/kofuk/dpb/fixed-response/internal/fixedresponse"
+	"github.com/kofuk/dpb/fixed-response/internal/reqinspect"
 )
 
 var commands = map[string]func(){
-	"fixed-response": fixedresponse.Run,
+	"fixed-response":  fixedresponse.Run,
+	"request-inspect": reqinspect.Run,
 }
 
 func main() {
