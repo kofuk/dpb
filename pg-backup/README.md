@@ -13,7 +13,7 @@ spec:
         spec:
           containers:
           - name: backup
-            image: github.com/kofuk/dpb/pg-to-gcs:0.1.0
+            image: github.com/kofuk/dpb/pg-backup:1.0.2
             env:
               - name: PGHOST
                 value: postgres.default.svc.cluster.local
