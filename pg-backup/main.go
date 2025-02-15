@@ -8,42 +8,61 @@ import (
 	"os"
 	"os/exec"
 
-	"cloud.google.com/go/storage"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/kelseyhightower/envconfig"
-	"google.golang.org/api/option"
 )
 
 type Config struct {
-	DumpAll         bool   `envconfig:"DUMP_ALL"`
-	CredentialsJSON string `envconfig:"CREDENTIALS_JSON"`
-	BucketName      string `envconfig:"BUCKET_NAME"`
-	ObjectKey       string `envconfig:"OBJECT_KEY"`
+	DumpAll       bool   `envconfig:"DUMP_ALL"`
+	BucketName    string `envconfig:"BUCKET_NAME"`
+	ObjectKey     string `envconfig:"OBJECT_KEY"`
+	UploadTempDir string `envconfig:"UPLOAD_TEMP_DIR"`
 }
 
-type PgToGCS struct {
-	client *storage.Client
+type PgBackup struct {
+	client *s3.Client
 	config Config
 }
 
-func (p *PgToGCS) CompressAndSave(ctx context.Context, name string, data io.Reader) error {
+func (p *PgBackup) CompressAndSave(ctx context.Context, name string, data io.Reader) error {
 	if c, ok := data.(io.Closer); ok {
 		defer c.Close()
 	}
 
-	objectWriter := p.client.Bucket(p.config.BucketName).Object(name).NewWriter(ctx)
-	defer objectWriter.Close()
+	tempFile, err := os.CreateTemp(p.config.UploadTempDir, "pg-backup-*")
+	if err != nil {
+		return err
+	}
+	defer tempFile.Close()
+	_ = os.Remove(tempFile.Name())
 
-	gzWriter := gzip.NewWriter(objectWriter)
-	defer gzWriter.Close()
+	gzWriter := gzip.NewWriter(tempFile)
 
 	if _, err := io.Copy(gzWriter, data); err != nil {
+		_ = gzWriter.Close()
+		return err
+	}
+	_ = gzWriter.Close()
+
+	if _, err := tempFile.Seek(0, io.SeekStart); err != nil {
+		return err
+	}
+
+	_, err = p.client.PutObject(ctx, &s3.PutObjectInput{
+		Bucket: &p.config.BucketName,
+		Key:    &name,
+		Body:   tempFile,
+	})
+	if err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (p *PgToGCS) GetDumpCommand() string {
+func (p *PgBackup) GetDumpCommand() string {
 	if p.config.DumpAll {
 		return "pg_dumpall"
 	} else {
@@ -51,7 +70,7 @@ func (p *PgToGCS) GetDumpCommand() string {
 	}
 }
 
-func (p *PgToGCS) BackupDB(ctx context.Context) error {
+func (p *PgBackup) BackupDB(ctx context.Context) error {
 	dumpCommand := exec.Command(p.GetDumpCommand())
 	dumpCommand.Stderr = os.Stderr
 	dumpCommandStdout, err := dumpCommand.StdoutPipe()
@@ -75,23 +94,28 @@ func (p *PgToGCS) BackupDB(ctx context.Context) error {
 	return nil
 }
 
-func main() {
-	var config Config
-	envconfig.MustProcess("", &config)
-
-	ctx := context.Background()
-
-	client, err := storage.NewClient(ctx, option.WithCredentialsJSON([]byte(config.CredentialsJSON)))
+func MustLoadAWSConfig(ctx context.Context) aws.Config {
+	config, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
+	return config
+}
 
-	pgToGCS := PgToGCS{
+func main() {
+	ctx := context.Background()
+
+	client := s3.NewFromConfig(MustLoadAWSConfig(ctx))
+
+	var config Config
+	envconfig.MustProcess("", &config)
+
+	pgBackup := PgBackup{
 		client: client,
 		config: config,
 	}
 
-	if err := pgToGCS.BackupDB(ctx); err != nil {
+	if err := pgBackup.BackupDB(ctx); err != nil {
 		log.Fatal(err)
 	}
 }

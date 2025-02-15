@@ -1,4 +1,4 @@
-# Backup PostgreSQL to Google Cloud Storage
+# Backup PostgreSQL to Amazon S3
 
 ```yaml
 apiVersion: batch/v1
@@ -27,13 +27,8 @@ spec:
                 value: my-bucket
               - name: OBJECT_KEY
                 value: db.gz
-              - name: CREDENTIALS_JSON # This should be written in Secret and referenced with envFrom.secretRef.
-                value: |
-                  {
-                    "type": "service_account",
-                    "project_id": "...",
-                    "private_key_id": "...",
-                    "private_key": "...",
-                    ...
-                  }
+              - name: AWS_ACCESS_KEY_ID
+                value: xxxxx
+              - name: AWS_SECRET_ACCESS_KEY
+                value: xxxxx
 ```
