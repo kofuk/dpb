@@ -1,4 +1,4 @@
-FROM elasticsearch:7.17.26@sha256:340f15d5e07488e6bddc60e90690cab1288ffbccb4d20841fa282a7b6501fe51
+FROM elasticsearch:7.17.28@sha256:a06b03a2db8db2be43d3c3851e7bcebdd4fff79f4db08c7da6bad7a8776d3e15
 
 RUN elasticsearch-plugin install analysis-icu && \
     elasticsearch-plugin install analysis-kuromoji
