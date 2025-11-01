@@ -1,0 +1,26 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "pinDigests": true,
+  "packageRules": [
+    {
+      "groupName": "Go",
+      "matchDatasources": [
+        "golang-version"
+      ],
+      "rangeStrategy": "bump"
+    },
+    {
+      "groupName": "Go",
+      "matchDepNames": [
+        "golang"
+      ],
+      "matchDatasources": [
+        "docker"
+      ],
+      "rangeStrategy": "bump"
+    }
+  ]
+}

@@ -27,7 +27,7 @@ jobs:
           tmp=$(mktemp)
 
           for dir in */; do
-            image_ref="ghcr.io/${GITHUB_REPOSITORY}/${dir%/}:$(cat "${dir}/TAG")"
+            image_ref="ghcr.io/${GITHUB_REPOSITORY}/${dir%/}:$(./resolve-tag.sh "${dir}")"
             if ! docker manifest inspect "${image_ref}"; then
               echo "${dir%/}" >> "${tmp}"
             fi
@@ -50,7 +50,9 @@ jobs:
       - name: Extract tag
         id: tag
         run: |
-          echo "tag=ghcr.io/${GITHUB_REPOSITORY}/${{ matrix.app }}:$(cat "${{ matrix.app }}/TAG")" >>"${GITHUB_OUTPUT}"
+          echo "tag=ghcr.io/${GITHUB_REPOSITORY}/${{ matrix.app }}:$(./resolve-tag.sh "${APP}")" >>"${GITHUB_OUTPUT}"
+        env:
+          APP: ${{ matrix.app }}
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
