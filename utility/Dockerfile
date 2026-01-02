@@ -1,4 +1,4 @@
-FROM golang:1.25.5@sha256:6396b3d8039d2050ab7a3c5c6e1cbeed8bf6d2ddc0403e1ab39d78749227ca19 AS builder
+FROM golang:1.25.5@sha256:6cc2338c038bc20f96ab32848da2b5c0641bb9bb5363f2c33e9b7c8838f9a208 AS builder
 WORKDIR /build
 COPY . .
 RUN CGO_ENABLED=0 go build -o fixed-response .
