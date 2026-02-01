@@ -16,7 +16,7 @@ jobs:
       apps: ${{ steps.collect.outputs.apps }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
-      - uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -53,7 +53,7 @@ jobs:
           echo "tag=ghcr.io/${GITHUB_REPOSITORY}/${{ matrix.app }}:$(./resolve-tag.sh "${APP}")" >>"${GITHUB_OUTPUT}"
         env:
           APP: ${{ matrix.app }}
-      - uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
